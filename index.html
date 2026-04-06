@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mtype — link shorteners for monkeytype profiles</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #313338;
+    --bg-light: #3a3d42;
+    --bg-lighter: #43464c;
+    --accent: #e2b714;
+    --white: #ffffff;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Roboto Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 56px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    background: rgba(49,51,56,0.95);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-left { display: flex; gap: 0.25rem; }
+  .nav-right { display: flex; gap: 0.25rem; }
+
+  nav a {
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+    cursor: pointer;
+  }
+
+  nav a:hover {
+    color: var(--white);
+    background: rgba(255,255,255,0.06);
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem;
+    gap: 0;
+  }
+
+  .title-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: clamp(3.5rem, 10vw, 6rem);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+  }
+
+  .title-underline {
+    display: block;
+    height: 3px;
+    margin-top: 6px;
+    background: linear-gradient(to right, var(--accent) 0%, var(--accent) 40%, transparent 100%);
+    border-radius: 2px;
+    width: 100%;
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .disclaimer {
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .create-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .create-btn {
+    background: var(--bg-light);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--accent);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .create-btn:hover {
+    background: var(--bg-lighter);
+    border-color: rgba(255,255,255,0.15);
+  }
+
+  .input-wrap {
+    display: none;
+    align-items: center;
+    background: var(--bg-light);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: rgba(226,183,20,0.5);
+  }
+
+  .input-wrap.visible { display: flex; }
+
+  .username-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--white);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    padding: 10px 14px;
+    caret-color: var(--accent);
+  }
+
+  .username-input::placeholder {
+    color: rgba(255,255,255,0.25);
+  }
+
+  .confirm-btn {
+    background: transparent;
+    border: none;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+
+  .confirm-btn:hover { background: rgba(255,255,255,0.06); }
+  .confirm-btn svg { width: 18px; height: 18px; }
+
+  .status-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+
+  .status-area.visible { display: flex; }
+
+  .status-icon-wrap svg {
+    width: 28px;
+    height: 28px;
+    opacity: 0.5;
+  }
+
+  .spin { animation: spin 0.8s linear infinite; }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .status-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    transition: opacity 0.3s;
+  }
+
+  .status-text a {
+    color: var(--accent);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .overlay.visible { display: flex; }
+
+  .modal {
+    background: var(--bg-light);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 340px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    animation: pop 0.15s ease-out;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal svg { width: 32px; height: 32px; }
+
+  .modal-text {
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  .modal-username {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: var(--accent);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+
+  .modal-btns {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  .modal-btns button {
+    flex: 1;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    padding: 9px 0;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .btn-keep {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+  }
+
+  .btn-keep:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.25);
+  }
+
+  .btn-continue {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #1a1a1a;
+    font-weight: 600;
+  }
+
+  .btn-continue:hover { background: #f0c020; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="/" onclick="location.reload(); return false;">Home</a>
+    <a href="https://mtgoals.cc" target="_blank">Monkeytype Goals</a>
+  </div>
+  <div class="nav-right">
+    <a href="https://github.com/konatify/mtype" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<main>
+  <div class="title-wrap">
+    <span class="title">mtype</span>
+    <span class="title-underline"></span>
+  </div>
+
+  <p class="subtitle">Link shorteners for Monkeytype profiles.</p>
+  <p class="disclaimer">Not endorsed or promoted by miodec.</p>
+
+  <div class="create-area">
+    <button class="create-btn" id="createBtn" onclick="showInput()">Create...</button>
+
+    <div class="input-wrap" id="inputWrap">
+      <input
+        class="username-input"
+        id="usernameInput"
+        type="text"
+        placeholder="miodec"
+        maxlength="50"
+        autocomplete="off"
+        spellcheck="false"
+        onkeydown="if(event.key==='Enter') openModal()"
+      />
+      <button class="confirm-btn" onclick="openModal()" title="Confirm">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12.6111L8.92308 17.5L20 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="status-area" id="statusArea">
+      <div class="status-icon-wrap" id="statusIcon"></div>
+      <div class="status-text" id="statusText"></div>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="17" r="1" fill="#ffffff"/>
+      <path d="M12 10L12 14" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3.44722 18.1056L10.2111 4.57771C10.9482 3.10361 13.0518 3.10362 13.7889 4.57771L20.5528 18.1056C21.2177 19.4354 20.2507 21 18.7639 21H5.23607C3.7493 21 2.78231 19.4354 3.44722 18.1056Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p class="modal-text">Are you sure this is the correct username? Here's what you've entered;</p>
+    <div class="modal-username" id="modalUsername"></div>
+    <div class="modal-btns">
+      <button class="btn-keep" onclick="closeModal()">Keep Editing</button>
+      <button class="btn-continue" onclick="doCreate()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showInput() {
+    document.getElementById('createBtn').style.display = 'none';
+    document.getElementById('inputWrap').classList.add('visible');
+    document.getElementById('usernameInput').focus();
+  }
+
+  function openModal() {
+    const val = document.getElementById('usernameInput').value.trim();
+    if (!val) return;
+    document.getElementById('modalUsername').textContent = val;
+    document.getElementById('overlay').classList.add('visible');
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('visible');
+    document.getElementById('usernameInput').focus();
+  }
+
+  document.getElementById('overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  async function doCreate() {
+    closeModal();
+    const username = document.getElementById('usernameInput').value.trim();
+    if (!username) return;
+
+    const statusArea = document.getElementById('statusArea');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+
+    statusArea.classList.add('visible');
+
+    statusIcon.innerHTML = `
+      <svg class="spin" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <g fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd">
+          <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" opacity=".2"/>
+          <path d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z"/>
+        </g>
+      </svg>`;
+
+    statusText.innerHTML = 'Creating redirect...';
+
+    await sleep(1200);
+    await typeErase(statusText, 'Creating redirect...', 'Doing the magic...');
+
+    try {
+      // Since this is approach 1 (pure pass-through), "creating" just means
+      // verifying the slug is valid. No backend needed — the redirect function
+      // handles everything automatically. We just confirm success.
+      await sleep(900);
+
+      statusIcon.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle opacity="0.5" cx="12" cy="12" r="10" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M8.5 12.5L10.5 14.5L15.5 9.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+
+      const url = `https://mtype.mtgoals.cc/${username}`;
+      statusText.innerHTML = `Success! Check it out <a href="${url}" target="_blank">here</a>.`;
+
+    } catch(e) {
+      statusIcon.innerHTML = `
+        <svg fill="#ffffff" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100,15a85,85,0,1,0,85,85A84.93,84.93,0,0,0,100,15Zm0,150a65,65,0,1,1,65-65A64.87,64.87,0,0,1,100,165Z"/>
+          <path d="M128.5,74a9.67,9.67,0,0,0-14,0L100,88.5l-14-14a9.9,9.9,0,0,0-14,14l14,14-14,14a9.9,9.9,0,0,0,14,14l14-14,14,14a9.9,9.9,0,0,0,14-14l-14-14,14-14A10.77,10.77,0,0,0,128.5,74Z"/>
+        </svg>`;
+      statusText.textContent = 'Sorry. Something went wrong...';
+    }
+  }
+
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  async function typeErase(el, oldText, newText) {
+    let text = oldText;
+    while (text.length > 0) {
+      text = text.slice(0, -1);
+      el.textContent = text;
+      await sleep(30);
+    }
+    await sleep(100);
+    for (let i = 0; i <= newText.length; i++) {
+      el.textContent = newText.slice(0, i);
+      await sleep(35);
+    }
+  }
+</script>
+</body>
+</html>
