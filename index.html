@@ -12,12 +12,12 @@
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#e2b714" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="mtype" />
-  <meta name="twitter:description" content="The website that allows you to create link shorteners to Monkeytype profiles for free." />
-  <meta name="twitter:image" content="https://www.mtype.mtgoals.cc/images/readme_picture.png" />
-  
-  <link rel="icon" type="image/png" href="/images/mtype.png">
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="mtype" />
+<meta name="twitter:description" content="The website that allows you to create link shorteners to Monkeytype profiles for free." />
+<meta name="twitter:image" content="https://www.mtype.mtgoals.cc/images/readme_picture.png" />
+
+<link rel="icon" type="image/png" href="/images/mtype.png">
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -147,6 +147,96 @@
     border-color: rgba(255,255,255,0.15);
   }
 
+  .invisible-row {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: var(--bg-light);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 9px 14px;
+    animation: fadeSlideIn 0.18s ease-out;
+  }
+
+  .invisible-row.visible { display: flex; }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .invisible-label-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .invisible-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.02em;
+  }
+
+  .invisible-hint {
+    font-size: 10px;
+    color: rgba(255,255,255,0.28);
+    letter-spacing: 0.01em;
+  }
+
+  .ghost-icon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.45;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
+
+  .invisible-row.active .ghost-icon {
+    opacity: 0.85;
+  }
+
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-lighter);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn:hover {
+    border-color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+  }
+
+  .toggle-btn.on {
+    background: rgba(226,183,20,0.12);
+    border-color: rgba(226,183,20,0.35);
+    color: var(--accent);
+  }
+
+  .toggle-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+
+  .toggle-btn.on .toggle-dot {
+    opacity: 1;
+    box-shadow: 0 0 4px var(--accent);
+  }
+
   .input-wrap {
     display: none;
     align-items: center;
@@ -267,6 +357,20 @@
     flex-shrink: 0;
   }
 
+  .zws-badge {
+    display: none;
+    font-size: 9px;
+    background: rgba(226,183,20,0.15);
+    border: 1px solid rgba(226,183,20,0.3);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 2px 5px;
+    letter-spacing: 0.04em;
+    margin-left: 2px;
+  }
+
+  .zws-badge.visible { display: inline; }
+
   .overlay {
     display: none;
     position: fixed;
@@ -317,6 +421,22 @@
     font-size: 14px;
     letter-spacing: 0.04em;
   }
+
+  .modal-invisible-note {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(226,183,20,0.7);
+    background: rgba(226,183,20,0.07);
+    border: 1px solid rgba(226,183,20,0.18);
+    border-radius: 6px;
+    padding: 6px 12px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .modal-invisible-note.visible { display: flex; }
 
   .modal-btns {
     display: flex;
@@ -380,6 +500,24 @@
   <div class="create-area">
     <button class="create-btn" id="createBtn" onclick="showInput()">Create...</button>
 
+    <div class="invisible-row" id="invisibleRow">
+      <div class="invisible-label-wrap">
+        <svg class="ghost-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3C8.13 3 5 6.13 5 10v9l2-2 2 2 2-2 2 2 2-2 2 2v-9c0-3.87-3.13-7-7-7z" fill="currentColor" opacity="0.9"/>
+          <circle cx="9.5" cy="11" r="1" fill="#313338"/>
+          <circle cx="14.5" cy="11" r="1" fill="#313338"/>
+        </svg>
+        <div>
+          <div class="invisible-label">Invisible Link</div>
+          <div class="invisible-hint">hides username in URL</div>
+        </div>
+      </div>
+      <button class="toggle-btn" id="toggleBtn" onclick="toggleInvisible()">
+        <span class="toggle-dot"></span>
+        <span id="toggleLabel">Off</span>
+      </button>
+    </div>
+
     <div class="input-wrap" id="inputWrap">
       <input
         class="username-input"
@@ -411,6 +549,7 @@
           </g>
         </svg>
         Copy to clipboard
+        <span class="zws-badge" id="zwsBadge">invisible</span>
       </button>
     </div>
   </div>
@@ -425,6 +564,9 @@
     </svg>
     <p class="modal-text">Are you sure this is the correct username? Here's what you've entered;</p>
     <div class="modal-username" id="modalUsername"></div>
+    <div class="modal-invisible-note" id="modalInvisibleNote">
+      👻 Invisible mode on — the URL will hide the username using zero-width characters.
+    </div>
     <div class="modal-btns">
       <button class="btn-keep" onclick="closeModal()">Keep Editing</button>
       <button class="btn-continue" onclick="doCreate()">Continue</button>
@@ -434,9 +576,31 @@
 
 <script>
   let currentUrl = '';
+  let invisibleMode = false;
+
+  function encodeZWS(str) {
+    let result = '\u{E0001}';
+    for (const ch of str) {
+      const code = ch.codePointAt(0);
+      result += String.fromCodePoint(0xE0000 + code);
+    }
+    return result;
+  }
+
+  function toggleInvisible() {
+    invisibleMode = !invisibleMode;
+    const btn = document.getElementById('toggleBtn');
+    const label = document.getElementById('toggleLabel');
+    const row = document.getElementById('invisibleRow');
+
+    btn.classList.toggle('on', invisibleMode);
+    label.textContent = invisibleMode ? 'On' : 'Off';
+    row.classList.toggle('active', invisibleMode);
+  }
 
   function showInput() {
     document.getElementById('createBtn').style.display = 'none';
+    document.getElementById('invisibleRow').classList.add('visible');
     document.getElementById('inputWrap').classList.add('visible');
     document.getElementById('usernameInput').focus();
   }
@@ -445,6 +609,7 @@
     const val = document.getElementById('usernameInput').value.trim();
     if (!val) return;
     document.getElementById('modalUsername').textContent = val;
+    document.getElementById('modalInvisibleNote').classList.toggle('visible', invisibleMode);
     document.getElementById('overlay').classList.add('visible');
   }
 
@@ -465,9 +630,11 @@
     const statusArea = document.getElementById('statusArea');
     const statusIcon = document.getElementById('statusIcon');
     const statusText = document.getElementById('statusText');
-    const copyBtn = document.getElementById('copyBtn');
+    const copyBtn   = document.getElementById('copyBtn');
+    const zwsBadge  = document.getElementById('zwsBadge');
 
     copyBtn.classList.remove('visible');
+    zwsBadge.classList.remove('visible');
     statusArea.classList.add('visible');
 
     statusIcon.innerHTML = `
@@ -492,9 +659,18 @@
           <path d="M8.5 12.5L10.5 14.5L15.5 9.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>`;
 
-      currentUrl = `mtype.cc/${username}`;
-      const fullUrl = `https://${currentUrl}`;
-      statusText.innerHTML = `Success! Check it out <a href="${fullUrl}" target="_blank">here</a>.`;
+      if (invisibleMode) {
+        const zwsSlug = encodeZWS(username);
+        currentUrl = `mtype.cc/${zwsSlug}`;
+        const fullUrl = `https://mtype.cc/${zwsSlug}`;
+        statusText.innerHTML = `Success! The link looks empty 👻 — <a href="${fullUrl}" target="_blank">click to verify</a>.`;
+        zwsBadge.classList.add('visible');
+      } else {
+        currentUrl = `mtype.cc/${username}`;
+        const fullUrl = `https://${currentUrl}`;
+        statusText.innerHTML = `Success! Check it out <a href="${fullUrl}" target="_blank">here</a>.`;
+      }
+
       copyBtn.classList.add('visible');
 
     } catch(e) {
@@ -510,8 +686,10 @@
   async function copyUrl() {
     if (!currentUrl) return;
     const btn = document.getElementById('copyBtn');
+    const zwsBadge = document.getElementById('zwsBadge');
     try {
       await navigator.clipboard.writeText(currentUrl);
+      const wasZws = zwsBadge.classList.contains('visible');
       btn.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M4 12.6111L8.92308 17.5L20 6.5" stroke="#e2b714" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -525,9 +703,9 @@
             <path d="M43.3,6h-1.6c-0.5,0-0.8,0.3-0.8,0.8V10c0,3.5-2.8,6.4-6.3,6.4H17.4c-3.5,0-6.3-2.9-6.3-6.4V6.8 c0-0.5-0.3-0.8-0.8-0.8H8.7C6.1,6,4,8.2,4,10.8v34.4C4,47.8,6.1,50,8.7,50h34.6c2.6,0,4.7-2.2,4.7-4.8V10.8C48,8.2,45.9,6,43.3,6z"></path>
           </g>
         </svg>
-        Copy to clipboard`;
+        Copy to clipboard
+        ${wasZws ? '<span class="zws-badge visible">invisible</span>' : ''}`;
     } catch(e) {
-      // fallback if clipboard API fails
     }
   }
 
@@ -549,10 +727,9 @@
     }
   }
 
-// Register service worker for instant repeat-visit caching
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/js/sw.js').catch(() => {});
-}
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/js/sw.js').catch(() => {});
+  }
 </script>
 </body>
 </html>
