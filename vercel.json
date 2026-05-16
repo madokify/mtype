@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/badge/:username",
+      "destination": "/api/badge/[username]"
+    },
+    {
       "source": "/:slug",
       "destination": "/api/[slug]"
     }
